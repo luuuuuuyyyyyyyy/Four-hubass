@@ -90,21 +90,16 @@ local function FazerGacha(name)
         }, "\016"
     })
 end
+local CHANNEL = "\004" -- ou "\016"
 
 local function CreateDungeon()
-    Remote:FireServer({
-        {
-            Event = "DungeonAction", Action = "Create"
-        }, "\016"
-    })
+    Remote:FireServer({ { Event = "DungeonAction", Action = "Create" }, CHANNEL })
+    print("[DEBUG] CreateDungeon sent, channel=", tostring(CHANNEL))
 end
 
 local function StartDungeon()
-    Remote:FireServer({
-        {
-            Dungeon = 4286839868, Event = "DungeonAction", Action = "Start"
-        }, "\016"
-    })
+    Remote:FireServer({ { Dungeon = 4286839868, Event = "DungeonAction", Action = "Start" }, CHANNEL })
+    print("[DEBUG] StartDungeon sent, channel=", tostring(CHANNEL))
 end
 
 --==================== TOGGLES MASTER ====================
@@ -1141,6 +1136,115 @@ AutoFarmGroup:AddToggle("AutoFarmCompleto", {Title = "Auto Farm Completo", Defau
     Toggles.AutoFarmCompleto = v
     if v then AutoFarmSystem:Start() else AutoFarmSystem:Stop() end
 end})
+
+-- ==================== INTEGRAÇÃO: AUTO FARM ARVORE (🎃) NA ABA DUNGEON -> Auto Farm ====================
+-- Cole este bloco logo após AutoFarmGroup:AddToggle("AutoFarmCompleto", ...)
+-- Garante que a funcionalidade use UpdateCharacter(), HumanoidRootPart e Fluent já existentes
+
+Toggles.AutoFarmArvore = Toggles.AutoFarmArvore or false
+
+local PumpsFolder = workspace:WaitForChild("__Extra"):WaitForChild("__Pumps")
+local AutoFarmPump = {Active = false, Loop = nil}
+local lastPumpIndex = 1
+
+local function TeleportToPartForPump(cf)
+    -- garante Character/HRP atualizados
+    UpdateCharacter()
+    pcall(function() HumanoidRootPart.CFrame = cf + Vector3.new(0, 3, 0) end)
+end
+
+local function ColetarPump(model)
+    local ok, prompt = pcall(function()
+        return model:FindFirstChildWhichIsA("ProximityPrompt", true)
+    end)
+    if not ok or not prompt then return false end
+
+    -- Se existir exploit que dispara direto, usar (mais confiável)
+    local fired = false
+    pcall(function()
+        if typeof(fireproximityprompt) == "function" then
+            -- tenta ativar instantaneamente e não fica preso
+            fireproximityprompt(prompt, 1)
+            fired = true
+        end
+    end)
+    if fired then return true end
+
+    -- Fallback: usa InputHoldBegin/End com hold curto e segue adiante
+    pcall(function()
+        prompt:InputHoldBegin()
+    end)
+    -- segura só um pouco para não ficar preso; servidor pode registrar
+    task.wait(0.25)
+    pcall(function()
+        prompt:InputHoldEnd()
+    end)
+    return true
+end
+
+local function AutoFarmPumpLoop()
+    while AutoFarmPump.Active do
+        local pumps = PumpsFolder:GetChildren()
+        if #pumps == 0 then
+            task.wait(1)
+            continue
+        end
+
+        -- percorre pumps em ciclo, começando de lastPumpIndex+1
+        for i = 1, #pumps do
+            if not AutoFarmPump.Active then break end
+            local idx = ((lastPumpIndex + i - 1) % #pumps) + 1
+            local obj = pumps[idx]
+            if obj and obj.Name == "Pumpkin" and obj:IsDescendantOf(workspace) then
+                local part = obj:FindFirstChildWhichIsA("BasePart", true)
+                if part then
+                    -- teleporta rápido para cima do pump
+                    TeleportToPartForPump(part.CFrame)
+                    task.wait(0.15)
+                    -- ativa o prompt (se possível dispara instantaneamente)
+                    pcall(function() ColetarPump(obj) end)
+                    -- marca index para continuar do próximo pump
+                    lastPumpIndex = idx
+                    -- vai imediatamente para o próximo (evita ficar preso)
+                    task.wait(0.2)
+                end
+            end
+        end
+
+        -- pequena espera entre ciclos completos
+        task.wait(0.4)
+    end
+end
+
+function AutoFarmPump:Start()
+    if self.Active then return end
+    if not PumpsFolder or not PumpsFolder.Parent then
+        Fluent:Notify({Title = "AutoFarm Arvore", Content = "❌ Pumps não encontrado!", Duration = 3})
+        return
+    end
+    UpdateCharacter()
+    self.Active = true
+    self.Loop = task.spawn(AutoFarmPumpLoop)
+    Fluent:Notify({Title = "AutoFarm Arvore", Content = "✅ Ativado!", Duration = 3})
+end
+
+function AutoFarmPump:Stop()
+    if not self.Active then return end
+    self.Active = false
+    if self.Loop then task.cancel(self.Loop) end
+    Fluent:Notify({Title = "AutoFarm Arvore", Content = "❌ Desativado!", Duration = 3})
+end
+
+-- Adiciona o toggle na UI já existente (AutoFarmGroup)
+AutoFarmGroup:AddToggle("AutoFarmArvore", {
+    Title = "Auto Farm Arvore 🎃",
+    Default = false,
+    Callback = function(v)
+        Toggles.AutoFarmArvore = v
+        if v then AutoFarmPump:Start() else AutoFarmPump:Stop() end
+    end
+})
+-- ==================== FIM: AUTO FARM ARVORE ====================
 
 --==== TELEPORT ====--
 local WorldFolder = workspace:WaitForChild("__Main"):WaitForChild("__World")
