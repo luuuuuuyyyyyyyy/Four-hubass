@@ -1137,13 +1137,24 @@ AutoFarmGroup:AddToggle("AutoFarmCompleto", {Title = "Auto Farm Completo", Defau
     if v then AutoFarmSystem:Start() else AutoFarmSystem:Stop() end
 end})
 
--- AUTO FARM ARVORE (fixado para não travar no mesmo pump)
+-- AUTO FARM ARVORE (versão robusta: espera o prompt sumir / força saída se travar)
 Toggles.AutoFarmArvore = Toggles.AutoFarmArvore or false
 
 local PumpsFolder = workspace:WaitForChild("__Extra"):WaitForChild("__Pumps")
 local AutoFarmPump = {Active = false, Loop = nil}
 local lastPumpIndex = 0
-local processedCooldown = {} -- tabela: object -> timestamp até quando pular
+local processedCooldown = {} -- object -> timestamp (pular enquanto > tick())
+local CHECK_PROMPT_TIMEOUT = 2.2 -- segundos para esperar o prompt desaparecer
+local COOLDOWN_ON_FAIL = 5 -- cooldown maior quando falha
+local COOLDOWN_ON_SUCCESS = 1.8
+
+local function promptExistsOnModel(model)
+    if not model or not model.Parent then return false end
+    local ok, found = pcall(function()
+        return model:FindFirstChildWhichIsA("ProximityPrompt", true) ~= nil
+    end)
+    return ok and found
+end
 
 local function TeleportToPartForPump(cf)
     UpdateCharacter()
@@ -1154,8 +1165,9 @@ local function ColetarPump(model)
     local ok, prompt = pcall(function()
         return model:FindFirstChildWhichIsA("ProximityPrompt", true)
     end)
-    if not ok or not prompt then return false end
+    if not ok or not prompt then return false, "no_prompt" end
 
+    -- tenta exploit se disponível
     local fired = false
     pcall(function()
         if typeof(fireproximityprompt) == "function" then
@@ -1163,13 +1175,36 @@ local function ColetarPump(model)
             fired = true
         end
     end)
-    if fired then return true end
+    if fired then return true, "fired_exploit" end
 
-    -- fallback
-    pcall(function() prompt:InputHoldBegin() end)
-    task.wait(0.25)
+    -- fallback: InputHold
+    local suc, err = pcall(function()
+        prompt:InputHoldBegin()
+    end)
+    if not suc then return false, "input_begin_failed" end
+    -- segura um pouco (servidor pode requerer mais que 0.25)
+    task.wait(0.35)
     pcall(function() prompt:InputHoldEnd() end)
-    return true
+    return true, "held"
+end
+
+local function tryCollectAndWait(model)
+    -- tenta ativar
+    local ok, reason = pcall(function() return ColetarPump(model) end)
+    if not ok then
+        -- erro ao tentar coletar
+        return false
+    end
+    -- espera até o prompt desaparecer ou timeout
+    local start = tick()
+    while tick() - start < CHECK_PROMPT_TIMEOUT do
+        if not promptExistsOnModel(model) then
+            return true
+        end
+        task.wait(0.12)
+    end
+    -- timeout: consideramos falha
+    return false
 end
 
 local function AutoFarmPumpLoop()
@@ -1180,48 +1215,61 @@ local function AutoFarmPumpLoop()
             continue
         end
 
-        -- tenta cada pump uma vez por ciclo, mas sempre avança o índice
-        local attempts = 0
-        while attempts < #pumps and AutoFarmPump.Active do
-            lastPumpIndex = (lastPumpIndex % #pumps) + 1
-            local obj = pumps[lastPumpIndex]
-            attempts = attempts + 1
+        -- percorre os pumps em ciclo, sempre avançando lastPumpIndex
+        local total = #pumps
+        lastPumpIndex = (lastPumpIndex % total) + 1
+        local obj = pumps[lastPumpIndex]
 
-            if not obj then
-                task.wait(0.05)
-                continue
-            end
+        if not obj then
+            task.wait(0.05)
+            continue
+        end
 
-            -- pula se dentro do cooldown
-            local cd = processedCooldown[obj]
-            if cd and tick() < cd then
-                -- skip
-                continue
-            end
+        -- pula se em cooldown
+        local cd = processedCooldown[obj]
+        if cd and tick() < cd then
+            task.wait(0.05)
+            continue
+        end
 
-            if obj.Name == "Pumpkin" and obj:IsDescendantOf(workspace) then
-                local part = obj:FindFirstChildWhichIsA("BasePart", true)
-                if part then
-                    -- teleporta perto, tenta coletar e marca cooldown
-                    TeleportToPartForPump(part.CFrame)
-                    task.wait(0.12)
+        if obj.Name == "Pumpkin" and obj:IsDescendantOf(workspace) then
+            local part = obj:FindFirstChildWhichIsA("BasePart", true)
+            if part then
+                UpdateCharacter()
+                -- teleporta acima
+                TeleportToPartForPump(part.CFrame)
+                task.wait(0.12)
 
-                    local success = pcall(function() ColetarPump(obj) end)
+                local success = false
+                local ok, res = pcall(function() return tryCollectAndWait(obj) end)
+                if ok and res == true then
+                    success = true
+                else
+                    success = false
+                end
 
-                    -- marca por 2.5s para evitar re-tentar imediatamente
-                    processedCooldown[obj] = tick() + 2.5
-
-                    -- dá um pequeno deslocamento para "sair" da área do prompt (evita ficar preso)
+                if success then
+                    -- sucesso: pequeno cooldown e continua
+                    processedCooldown[obj] = tick() + COOLDOWN_ON_SUCCESS
+                    -- move um pouco pra não ficar no mesmo trigger
                     pcall(function()
-                        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + Vector3.new(1.5, 0, 0)
+                        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + Vector3.new(1.8, 0, 0)
                     end)
-
                     task.wait(0.18)
+                else
+                    -- falhou: aplica cooldown maior, força saída da área e segue
+                    processedCooldown[obj] = tick() + COOLDOWN_ON_FAIL
+                    -- tenta reposicionar longe do prompt para "desgrudar"
+                    pcall(function()
+                        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + Vector3.new(6, 0, 0)
+                    end)
+                    task.wait(0.35)
                 end
             end
         end
 
-        task.wait(0.35)
+        -- pequena espera entre pumps para não sobrecarregar
+        task.wait(0.08)
     end
 end
 
@@ -1244,7 +1292,7 @@ function AutoFarmPump:Stop()
     Fluent:Notify({Title = "AutoFarm Arvore", Content = "❌ Desativado!", Duration = 3})
 end
 
--- adiciona toggle na UI (se já existente, ignorará duplicata)
+-- garante toggle na UI
 AutoFarmGroup:AddToggle("AutoFarmArvore", {
     Title = "Auto Farm Arvore 🎃",
     Default = false,
