@@ -1,4 +1,4 @@
--- FOUR HUB v3.0 - MERGED (abas Infinite/Gachas/Upgrades/Loja substituídas pelo script fornecido)
+-- FOUR HUB v5.0 - MERGED (abas Infinite/Gachas/Upgrades/Loja substituídas pelo script fornecido)
 -- Integrado: funcionalidades originais + nova UI/abas (Infinite/Map, Gachas/Upgrades, Shop/Loja, Farm/Dungeon com Auto Reset)
 -- Observações:
 --  - Todas as chamadas Remote:FireServer usam o terminador "\004" conforme solicitado.
@@ -1763,6 +1763,6 @@ end})
 Window:SelectTab(LojaTab)
 
 -- Final notifications
-Fluent:Notify({Title = "FOUR HUB v3.0", Content = "✅ Hub carregado com abas substituídas!", Duration = 4})
+Fluent:Notify({Title = "FOUR HUB v5.0", Content = "✅ Hub carregado com abas substituídas!", Duration = 4})
 
 print("[FOUR HUB] ✅ Script final montado com alterações solicitadas.")
