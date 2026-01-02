@@ -1438,6 +1438,45 @@ ShopSection:AddToggle("AutoBuyToggle", {
     end
 })
 
+-- Adicionar um novo Section (opcional, para separar visualmente)
+local MysticaSection = LojaTab:AddSection("Auto Comprar Mística")
+
+local autoMysticaRunning = false
+
+MysticaSection:AddToggle("AutoMysticaToggle", {
+    Title = "Auto Comprar Mística (x500)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            autoMysticaRunning = true
+            Fluent:Notify({Title = "Auto Mística", Content = "Comprando EnchMythical x500 automaticamente!", Duration = 5})
+
+            task.spawn(function()
+                while autoMysticaRunning do
+                    local args = {
+                        {
+                            {
+                                Shop = "ExchangeShop",
+                                Action = "Buy",
+                                Amount = 500,
+                                Item = "EnchMythical",
+                                Event = "ItemShopAction",
+                                Rank = 1
+                            },
+                            "\004"
+                        }
+                    }
+                    Remote:FireServer(unpack(args))
+                    task.wait(0.6)  -- delay para não floodar o servidor (ajuste se quiser mais rápido)
+                end
+            end)
+        else
+            autoMysticaRunning = false
+            Fluent:Notify({Title = "Auto Mística", Content = "Desativado", Duration = 3})
+        end
+    end
+})
+
 -- Dungeon Tab: keep original Dungeon controls but add Auto Reset (moved here)
 local DungeonGroup = DungeonTab:AddSection("Dungeon Options")
 DungeonGroup:AddButton({Title = "Criar Dungeon", Callback = function()
@@ -1758,6 +1797,60 @@ AntiAFKGroup:AddToggle("RemoveTeleportUI", {Title = "Remover TeleportScreen UI",
         end
     end
 end})
+
+-- ==========================================================
+-- SISTEMA DE AUTO-SAVE GLOBAL (Colar no final do Script)
+-- ==========================================================
+local HttpService = game:GetService("HttpService")
+local SaveFileName = "FourHub_v3_Config.json"
+
+-- Função para Salvar
+local function GlobalSave()
+    local ConfigToSave = {}
+    for Id, Option in pairs(Fluent.Options) do
+        -- Salva apenas o que tem valor (Toggle, Dropdown, Slider, Colorpicker, etc)
+        if Option.Value ~= nil then
+            ConfigToSave[Id] = Option.Value
+        end
+    end
+    writefile(SaveFileName, HttpService:JSONEncode(ConfigToSave))
+end
+
+-- Função para Carregar
+local function GlobalLoad()
+    if isfile(SaveFileName) then
+        local success, data = pcall(function()
+            return HttpService:JSONDecode(readfile(SaveFileName))
+        end)
+
+        if success and typeof(data) == "table" then
+            for Id, Value in pairs(data) do
+                if Fluent.Options[Id] then
+                    -- Define o valor na UI sem disparar o callback repetidamente se possível
+                    Fluent.Options[Id]:SetValue(Value)
+                end
+            end
+        end
+    end
+end
+
+-- 1. Carrega as configurações salvas assim que o script terminar de carregar a UI
+GlobalLoad()
+
+-- 2. Cria um loop ou conexão para salvar sempre que algo mudar
+-- Isso percorre todas as opções da UI e conecta o evento de mudança ao Save
+for Id, Option in pairs(Fluent.Options) do
+    Option:OnChanged(function()
+        GlobalSave()
+    end)
+end
+
+-- Aviso opcional de que o sistema de save foi carregado
+Fluent:Notify({
+    Title = "FourHub v3",
+    Content = "Configurações carregadas com sucesso!",
+    Duration = 3
+})
 
 -- Select initial tab
 Window:SelectTab(LojaTab)
