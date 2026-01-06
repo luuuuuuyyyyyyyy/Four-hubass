@@ -1798,6 +1798,53 @@ AntiAFKGroup:AddToggle("RemoveTeleportUI", {Title = "Remover TeleportScreen UI",
     end
 end})
 
+-- ===========================
+-- SEÇÃO AUTO EXECUTE (Sincronizado com GitHub)
+-- ===========================
+local AutoExecSection = MiscTab:AddSection("Auto Execute")
+
+local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
+
+AutoExecSection:AddButton({
+    Title = "Instalar no Auto-Exec",
+    Description = "Cria um arquivo na pasta do seu executor para o script abrir sozinho.",
+    Callback = function()
+        -- Comando que será salvo no executor do usuário
+        local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
+        
+        if writefile then
+            pcall(function()
+                writefile("FourHub_AutoExec.lua", command)
+                Fluent:Notify({
+                    Title = "Sucesso!",
+                    Content = "O script foi salvo na pasta 'autoexec'. Ele abrirá sempre que você iniciar o Roblox.",
+                    Duration = 5
+                })
+            end)
+        else
+            Fluent:Notify({Title = "Erro", Content = "Seu executor não tem permissão para salvar arquivos (writefile).", Duration = 5})
+        end
+    end
+})
+
+AutoExecSection:AddToggle("AutoTeleportLoad", {
+    Title = "Persistência de Teleporte",
+    Description = "Faz o script reabrir automaticamente ao entrar em Dungeons/Portais.",
+    Default = false,
+    Callback = function(Value)
+        Toggles.AutoExecute = Value
+        if Value then
+            local queue_script = string.format('loadstring(game:HttpGet("%s"))()', scriptURL)
+            if queue_on_teleport then
+                queue_on_teleport(queue_script)
+                Fluent:Notify({Title = "Ativado", Content = "O script carregará automaticamente no próximo mapa.", Duration = 3})
+            else
+                Fluent:Notify({Title = "Aviso", Content = "Seu executor não suporta persistência de teleporte.", Duration = 3})
+            end
+        end
+    end
+})
+
 -- ==========================================================
 -- SISTEMA DE AUTO-SAVE GLOBAL (Colar no final do Script)
 -- ==========================================================
