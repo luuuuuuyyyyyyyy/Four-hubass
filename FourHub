@@ -1632,8 +1632,11 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC COMPLETA (SEM ERROS)
+-- ABA MISC COMPLETA E CORRIGIDA (COM AUTO EXECUTE)
 -- ==========================================================
+
+-- DEFINA A URL AQUI PARA NÃO DAR ERRO
+local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
 local MiscGroup = MiscTab:AddSection("Ferramentas")
 MiscGroup:AddButton({Title = "Rejoin", Callback = function()
@@ -1654,16 +1657,11 @@ StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = fa
         StatsActive = true
         StartTime = tick()
         task.spawn(function()
-            while StatsActive do
-                UpdateStats()
-                task.wait(1)
-            end
+            while StatsActive do UpdateStats(); task.wait(1) end
         end)
-        Fluent:Notify({Title = "Stats Dashboard", Content = "✅ Dashboard ativado!", Duration = 3})
     else
         StatsActive = false
         if StatsUI and StatsUI.ScreenGui then StatsUI.ScreenGui:Destroy() end
-        Fluent:Notify({Title = "Stats Dashboard", Content = "❌ Dashboard desativado!", Duration = 3})
     end
 end})
 
@@ -1673,14 +1671,12 @@ WebhookGroup:AddInput("WebhookURLInput", {
     Default = "",
     Callback = function(Value) WEBHOOK_URL = Value end
 })
-
 WebhookGroup:AddButton({
     Title = "✅ Salvar e Testar",
     Callback = function()
         if WEBHOOK_URL ~= "" then
             WebhookActive = true
-            SendWebhook("✅ FOUR HUB", "Conectado com sucesso!", 65280)
-            Fluent:Notify({Title = "Webhook", Content = "Testado! Olhe seu Discord.", Duration = 4})
+            SendWebhook("✅ FOUR HUB", "Conectado!", 65280)
         end
     end
 })
@@ -1689,9 +1685,7 @@ local NotificationsGroup = MiscTab:AddSection("🔔 Notificações")
 NotificationsGroup:AddToggle("NotificationsToggle", {
     Title = "Ativar Notificações",
     Default = true,
-    Callback = function(v) 
-        NotificationsEnabled = v 
-    end
+    Callback = function(v) NotificationsEnabled = v end
 })
 
 local AntiAFKGroup = MiscTab:AddSection("Proteção")
@@ -1712,106 +1706,69 @@ AntiAFKGroup:AddToggle("AntiAFK", {
             Fluent:Notify({Title = "Anti AFK", Content = "✅ Ativado!", Duration = 3})
         else
             if getgenv().AntiAFKConnection then getgenv().AntiAFKConnection:Disconnect() end
-            Fluent:Notify({Title = "Anti AFK", Content = "❌ Desativado!", Duration = 3})
         end
     end
 })
 
-AntiAFKGroup:AddToggle("RemoveTeleportUI", {
-    Title = "Remover TeleportScreen UI", 
-    Default = false, 
-    Callback = function(v)
-        local screen = ReplicatedStorage:FindFirstChild("__Assets") and ReplicatedStorage.__Assets:FindFirstChild("TeleportScreen")
-        if v and screen then screen.Parent = nil else if screen then screen.Parent = ReplicatedStorage.__Assets end end
-    end
-})
-
--- ===========================
--- SEÇÃO AUTO EXECUTE (Sincronizado com GitHub)
--- ===========================
+-- SEÇÃO AUTO EXECUTE (VOLTOU!)
 local AutoExecSection = MiscTab:AddSection("Auto Execute")
-
-local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
 AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
-    Description = "Cria um arquivo na pasta do seu executor para o script abrir sozinho.",
+    Description = "Salva o script na pasta do executor para abrir sozinho.",
     Callback = function()
-        -- Comando que será salvo no executor do usuário
-        local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
-        
         if writefile then
-            pcall(function()
-                writefile("FourHub_AutoExec.lua", command)
-                Fluent:Notify({
-                    Title = "Sucesso!",
-                    Content = "O script foi salvo na pasta 'autoexec'. Ele abrirá sempre que você iniciar o Roblox.",
-                    Duration = 5
-                })
-            end)
+            local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
+            writefile("FourHub_AutoExec.lua", command)
+            Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
         else
-            Fluent:Notify({Title = "Erro", Content = "Seu executor não tem permissão para salvar arquivos (writefile).", Duration = 5})
+            Fluent:Notify({Title = "Erro", Content = "Seu executor não suporta writefile.", Duration = 5})
         end
     end
 })
 
 AutoExecSection:AddToggle("AutoTeleportLoad", {
     Title = "Persistência de Teleporte",
-    Description = "Faz o script reabrir automaticamente ao entrar em Dungeons/Portais.",
+    Description = "Reabre o script ao mudar de mapa/dungeon.",
     Default = false,
     Callback = function(Value)
         Toggles.AutoExecute = Value
-        if Value then
-            local queue_script = string.format('loadstring(game:HttpGet("%s"))()', scriptURL)
-            if queue_on_teleport then
-                queue_on_teleport(queue_script)
-                Fluent:Notify({Title = "Ativado", Content = "O script carregará automaticamente no próximo mapa.", Duration = 3})
-            else
-                Fluent:Notify({Title = "Aviso", Content = "Seu executor não suporta persistência de teleporte.", Duration = 3})
-            end
+        if Value and queue_on_teleport then
+            queue_on_teleport(string.format('loadstring(game:HttpGet("%s"))()', scriptURL))
+            Fluent:Notify({Title = "Ativado", Content = "Persistência ativada!", Duration = 3})
         end
     end
 })
 
--- ==========================================================
--- BOTÃO MOBILE EXCLUSIVO
--- ==========================================================
+-- BOTÃO MOBILE
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
     local UICorner = Instance.new("UICorner", MobileToggleButton)
-    
     MobileToggleButton.Size = UDim2.new(0, 50, 0, 50)
     MobileToggleButton.Position = UDim2.new(0.1, 0, 0.15, 0)
-    MobileToggleButton.Text = "4H"
-    MobileToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    MobileToggleButton.TextColor3 = Color3.fromRGB(100, 200, 255)
-    MobileToggleButton.Draggable = true
+    MobileToggleButton.Text = "4H"; MobileToggleButton.BackgroundColor3 = Color3.fromRGB(30,30,30); MobileToggleButton.TextColor3 = Color3.fromRGB(100,200,255); MobileToggleButton.Draggable = true
     UICorner.CornerRadius = UDim.new(0, 10)
-
-    MobileToggleButton.MouseButton1Click:Connect(function()
-        Window:Minimize()
-    end)
+    MobileToggleButton.MouseButton1Click:Connect(function() Window:Minimize() end)
 end
 
--- ==========================================================
--- FINALIZAÇÃO E SAVE GLOBAL
--- ==========================================================
+-- SISTEMA DE SAVE FINAL
 local SaveFileName = "FourHub_v3_Config.json"
-
 local function GlobalSave()
     local ConfigToSave = {}
     for Id, Option in pairs(Fluent.Options) do
         if Option.Value ~= nil then ConfigToSave[Id] = Option.Value end
     end
-    writefile(SaveFileName, game:GetService("HttpService"):JSONEncode(ConfigToSave))
+    if writefile then writefile(SaveFileName, game:GetService("HttpService"):JSONEncode(ConfigToSave)) end
 end
 
 local function GlobalLoad()
-    if isfile(SaveFileName) then
-        local data = game:GetService("HttpService"):JSONDecode(readfile(SaveFileName))
-        for Id, Value in pairs(data) do
-            if Fluent.Options[Id] then Fluent.Options[Id]:SetValue(Value) end
+    if isfile and isfile(SaveFileName) then
+        local success, data = pcall(function() return game:GetService("HttpService"):JSONDecode(readfile(SaveFileName)) end)
+        if success then
+            for Id, Value in pairs(data) do
+                if Fluent.Options[Id] then Fluent.Options[Id]:SetValue(Value) end
+            end
         end
     end
 end
@@ -1822,6 +1779,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Tudo pronto e carregado!", Duration = 4})
-
-print("[FOUR HUB] ✅ Script final montado com alterações solicitadas.")
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Misc e Auto-Execute Restaurados!", Duration = 4})
