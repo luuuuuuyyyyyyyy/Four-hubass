@@ -1632,23 +1632,25 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC COMPLETA E CORRIGIDA (COM AUTO EXECUTE)
+-- ABA MISC COMPLETA - VERSÃO FINAL (COM TUDO)
 -- ==========================================================
 
--- DEFINA A URL AQUI PARA NÃO DAR ERRO
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
+-- SEÇÃO: FERRAMENTAS
 local MiscGroup = MiscTab:AddSection("Ferramentas")
 MiscGroup:AddButton({Title = "Rejoin", Callback = function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end})
 
+-- SEÇÃO: PERFORMANCE
 local PerformanceGroup = MiscTab:AddSection("🚀 Performance")
 PerformanceGroup:AddButton({Title = "FPS Booster Mobile", Callback = function()
     Toggles.FPSBooster = true
     BoostFPS()
 end})
 
+-- SEÇÃO: DASHBOARD
 local StatsGroup = MiscTab:AddSection("📊 Stats Dashboard")
 StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = false, Callback = function(v)
     Toggles.StatsDashboard = v
@@ -1665,6 +1667,7 @@ StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = fa
     end
 end})
 
+-- SEÇÃO: WEBHOOK
 local WebhookGroup = MiscTab:AddSection("🪝 Webhook Logger")
 WebhookGroup:AddInput("WebhookURLInput", {
     Title = "URL do Webhook",
@@ -1681,6 +1684,7 @@ WebhookGroup:AddButton({
     end
 })
 
+-- SEÇÃO: NOTIFICAÇÕES
 local NotificationsGroup = MiscTab:AddSection("🔔 Notificações")
 NotificationsGroup:AddToggle("NotificationsToggle", {
     Title = "Ativar Notificações",
@@ -1688,7 +1692,10 @@ NotificationsGroup:AddToggle("NotificationsToggle", {
     Callback = function(v) NotificationsEnabled = v end
 })
 
+-- SEÇÃO: PROTEÇÃO (Onde está o Anti-AFK e o Remover Screen)
 local AntiAFKGroup = MiscTab:AddSection("Proteção")
+
+-- 1. Anti AFK Ultra
 AntiAFKGroup:AddToggle("AntiAFK", {
     Title = "Anti AFK (Ultra)", 
     Default = false, 
@@ -1710,37 +1717,56 @@ AntiAFKGroup:AddToggle("AntiAFK", {
     end
 })
 
--- SEÇÃO AUTO EXECUTE (VOLTOU!)
+-- 2. REMOVER TELEPORT SCREEN (O que tinha sumido!)
+AntiAFKGroup:AddToggle("RemoveTeleportUI", {
+    Title = "Remover TeleportScreen UI", 
+    Default = false, 
+    Callback = function(v)
+        Toggles.RemoveTeleportUI = v
+        local assetsFolder = game:GetService("ReplicatedStorage"):FindFirstChild("__Assets")
+        if v then
+            local teleportScreen = assetsFolder and assetsFolder:FindFirstChild("TeleportScreen")
+            if teleportScreen then
+                _G.TeleportScreenOriginalParent = teleportScreen.Parent
+                _G.TeleportScreenBackup = teleportScreen
+                teleportScreen.Parent = nil
+                Fluent:Notify({Title = "TeleportScreen", Content = "✅ Removida!", Duration = 3})
+            end
+        else
+            if _G.TeleportScreenBackup and _G.TeleportScreenOriginalParent then
+                _G.TeleportScreenBackup.Parent = _G.TeleportScreenOriginalParent
+                Fluent:Notify({Title = "TeleportScreen", Content = "✅ Restaurada!", Duration = 3})
+            end
+        end
+    end
+})
+
+-- SEÇÃO: AUTO EXECUTE
 local AutoExecSection = MiscTab:AddSection("Auto Execute")
 
 AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
-    Description = "Salva o script na pasta do executor para abrir sozinho.",
     Callback = function()
         if writefile then
             local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
             writefile("FourHub_AutoExec.lua", command)
             Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
-        else
-            Fluent:Notify({Title = "Erro", Content = "Seu executor não suporta writefile.", Duration = 5})
         end
     end
 })
 
 AutoExecSection:AddToggle("AutoTeleportLoad", {
     Title = "Persistência de Teleporte",
-    Description = "Reabre o script ao mudar de mapa/dungeon.",
     Default = false,
     Callback = function(Value)
         Toggles.AutoExecute = Value
         if Value and queue_on_teleport then
             queue_on_teleport(string.format('loadstring(game:HttpGet("%s"))()', scriptURL))
-            Fluent:Notify({Title = "Ativado", Content = "Persistência ativada!", Duration = 3})
         end
     end
 })
 
--- BOTÃO MOBILE
+-- BOTÃO MOBILE EXCLUSIVO
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
@@ -1752,7 +1778,7 @@ if game:GetService("UserInputService").TouchEnabled then
     MobileToggleButton.MouseButton1Click:Connect(function() Window:Minimize() end)
 end
 
--- SISTEMA DE SAVE FINAL
+-- SISTEMA DE SAVE GLOBAL
 local SaveFileName = "FourHub_v3_Config.json"
 local function GlobalSave()
     local ConfigToSave = {}
@@ -1779,4 +1805,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Misc e Auto-Execute Restaurados!", Duration = 4})
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Tudo restaurado com sucesso!", Duration = 4})
