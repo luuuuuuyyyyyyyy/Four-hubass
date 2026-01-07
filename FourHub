@@ -8,28 +8,33 @@
 --  - Salvei e organizei settings via JSON conforme o script novo.
 
 -- ==========================================================
--- WHITELIST SEGURA (FOUR HUB v3.0)
+-- WHITELIST CORRIGIDA (FOUR HUB v3.0)
 -- ==========================================================
-repeat task.wait() until game:IsLoaded() -- Espera o jogo carregar 100%
+repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
-local MyID = Player.UserId
 
--- LISTA DE IDS PERMITIDOS
+-- Sua lista atualizada com o ID da imagem
 local IDs_Permitidos = {
-    [2712553626] = true, -- O ID que voce passou
-    [4286839868] = true, -- COLOQUE SEU ID REAL AQUI SE FOR DIFERENTE
+    [2712553626] = true, -- SEU ID REAL (Confirmado pela imagem)
+    [4286839868] = true, -- ID reserva
 }
 
--- VERIFICAÇÃO
+local MyID = Player.UserId
+
+-- Verificação direta
 if not IDs_Permitidos[MyID] then
-    warn("ACESSO NEGADO: " .. MyID) -- Aparece no F9
-    Player:Kick("\n[FOUR HUB] WHITELIST\n\nSeu ID Real e: " .. MyID .. "\n\nTroque o numero no topo do script por este!")
-    return -- Para o script aqui
+    warn("ID nao autorizado: " .. MyID)
+    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\n\nSeu ID Real: " .. MyID .. "\nSe este ID estiver certo no script, salve o arquivo e tente de novo!")
+    return
 end
 
-print("Acesso Permitido! Carregando FOUR HUB...")
+print("Acesso concedido para o ID: " .. MyID)
+
+-- ==========================================================
+-- Começo script
+-- ==========================================================")
 
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent")
 local RunService = game:GetService("RunService")
