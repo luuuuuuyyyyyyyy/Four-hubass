@@ -1846,6 +1846,58 @@ AutoExecSection:AddToggle("AutoTeleportLoad", {
 })
 
 -- ==========================================================
+-- BOTÃO FLUTUANTE EXCLUSIVO PARA MOBILE (ABRIR/FECHAR)
+-- ==========================================================
+local UserInputService = game:GetService("UserInputService")
+
+-- Só executa o código se o dispositivo for Touch (Mobile/Tablet)
+if UserInputService.TouchEnabled then
+    local MobileToggleGui = Instance.new("ScreenGui")
+    local MobileToggleButton = Instance.new("TextButton")
+    local UICorner = Instance.new("UICorner")
+    local UIStroke = Instance.new("UIStroke")
+
+    MobileToggleGui.Name = "MobileToggleGui"
+    MobileToggleGui.Parent = game:GetService("CoreGui")
+    MobileToggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    MobileToggleButton.Name = "MobileToggleButton"
+    MobileToggleButton.Parent = MobileToggleGui
+    MobileToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MobileToggleButton.Position = UDim2.new(0.1, 0, 0.15, 0)
+    MobileToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    MobileToggleButton.Font = Enum.Font.GothamBold
+    MobileToggleButton.Text = "4H"
+    MobileToggleButton.TextColor3 = Color3.fromRGB(100, 200, 255)
+    MobileToggleButton.TextSize = 18.000
+    MobileToggleButton.Active = true
+    MobileToggleButton.Draggable = true -- Permite mover o botão pela tela
+
+    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.Parent = MobileToggleButton
+
+    UIStroke.Color = Color3.fromRGB(100, 200, 255)
+    UIStroke.Thickness = 2
+    UIStroke.Parent = MobileToggleButton
+
+    -- Função para abrir/fechar o Menu
+    MobileToggleButton.MouseButton1Click:Connect(function()
+        if Window then
+            Window:Minimize() 
+        end
+    end)
+
+    -- Efeito visual ao clicar
+    MobileToggleButton.MouseButton1Down:Connect(function()
+        MobileToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end)
+
+    MobileToggleButton.MouseButton1Up:Connect(function()
+        MobileToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    end)
+end
+
+-- ==========================================================
 -- SISTEMA DE AUTO-SAVE GLOBAL (Colar no final do Script)
 -- ==========================================================
 local HttpService = game:GetService("HttpService")
