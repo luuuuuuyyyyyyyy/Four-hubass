@@ -13,7 +13,7 @@
 repeat task.wait() until game:IsLoaded()
 
 local IDs_Permitidos = {
-    [2712553626] = true, -- SEU ID REAL (Confirmado pela imagem)
+   -- [2712553626] = true, -- SEU ID REAL (Confirmado pela imagem)
     [4286839868] = true, -- ID Reserva/Mapa
 }
 
