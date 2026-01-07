@@ -1632,7 +1632,7 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC - VERSÃO FINAL CORRIGIDA (REMOVER SCREEN VOLTOU)
+-- ABA MISC - TUDO INCLUSO (NOTIFICAÇÕES + REMOVER SCREEN)
 -- ==========================================================
 
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
@@ -1667,7 +1667,24 @@ StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = fa
     end
 end})
 
--- SEÇÃO: PROTEÇÃO (ONDE ESTÁ O REMOVER SCREEN)
+-- SEÇÃO: NOTIFICAÇÕES (VOLTOU!)
+local NotificationsGroup = MiscTab:AddSection("🔔 Notificações")
+NotificationsGroup:AddToggle("NotificationsToggle", {
+    Title = "Ativar Notificações",
+    Description = "Desative para parar de ver avisos no canto da tela.",
+    Default = true,
+    Callback = function(v)
+        NotificationsEnabled = v
+        -- Feedback visual rápido
+        Fluent:Notify({
+            Title = "Sistema de Notificações",
+            Content = v and "Notificações Ativadas ✅" or "Notificações Desativadas ❌",
+            Duration = 3
+        })
+    end
+})
+
+-- SEÇÃO: PROTEÇÃO (ANTI-AFK E REMOVER SCREEN)
 local AntiAFKGroup = MiscTab:AddSection("Proteção")
 
 -- 1. Anti AFK Ultra
@@ -1692,28 +1709,26 @@ AntiAFKGroup:AddToggle("AntiAFK", {
     end
 })
 
--- 2. REMOVER TELEPORT SCREEN (O REMOVER SCREAM QUE VOCÊ QUERIA)
+-- 2. Remover Teleport Screen (Scream Dungeon)
 AntiAFKGroup:AddToggle("RemoveTeleportUI", {
     Title = "Remover TeleportScreen UI", 
     Default = false, 
     Callback = function(v)
         Toggles.RemoveTeleportUI = v
-        -- Busca a pasta de Assets de forma segura
         local rs = game:GetService("ReplicatedStorage")
         local assets = rs:FindFirstChild("__Assets")
-        
         if v then
             local teleportScreen = assets and assets:FindFirstChild("TeleportScreen")
             if teleportScreen then
                 _G.TeleportScreenBackup = teleportScreen
                 _G.TeleportScreenParent = teleportScreen.Parent
                 teleportScreen.Parent = nil
-                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Tela removida com sucesso!", Duration = 3})
+                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Removida!", Duration = 3})
             end
         else
             if _G.TeleportScreenBackup and _G.TeleportScreenParent then
                 _G.TeleportScreenBackup.Parent = _G.TeleportScreenParent
-                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Tela restaurada!", Duration = 3})
+                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Restaurada!", Duration = 3})
             end
         end
     end
@@ -1721,7 +1736,6 @@ AntiAFKGroup:AddToggle("RemoveTeleportUI", {
 
 -- SEÇÃO: AUTO EXECUTE
 local AutoExecSection = MiscTab:AddSection("Auto Execute")
-
 AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
     Callback = function()
@@ -1729,17 +1743,6 @@ AutoExecSection:AddButton({
             local cmd = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
             writefile("FourHub_AutoExec.lua", cmd)
             Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
-        end
-    end
-})
-
-AutoExecSection:AddToggle("AutoTeleportLoad", {
-    Title = "Persistência de Teleporte",
-    Default = false,
-    Callback = function(v)
-        Toggles.AutoExecute = v
-        if v and queue_on_teleport then
-            queue_on_teleport(string.format('loadstring(game:HttpGet("%s"))()', scriptURL))
         end
     end
 })
@@ -1783,4 +1786,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Tudo restaurado! 'Remover Screen' está na seção Proteção.", Duration = 4})
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ TUDO PRONTO!", Duration = 4})
