@@ -1632,25 +1632,19 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC FINAL - TUDO ORGANIZADO (COLE DO MISCTAB EM DIANTE)
+-- ABA MISC COMPLETA - TUDO RESTAURADO E ORGANIZADO
 -- ==========================================================
 
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
--- 1. SEÇÃO DE NOTIFICAÇÕES (COLOQUEI NO TOPO PARA NÃO SUMIR)
+-- 1. SEÇÃO DE NOTIFICAÇÕES
 local NotificationsGroup = MiscTab:AddSection("🔔 Configurações de Avisos")
 
 NotificationsGroup:AddToggle("NotificationsToggle", {
     Title = "Ativar Notificações do Script",
-    Description = "Liga/Desliga os avisos que aparecem no canto da tela.",
     Default = true,
     Callback = function(Value)
         NotificationsEnabled = Value
-        Fluent:Notify({
-            Title = "Notificações",
-            Content = Value and "Avisos Ativados ✅" or "Avisos Desativados ❌",
-            Duration = 3
-        })
     end
 })
 
@@ -1695,7 +1689,6 @@ AntiAFKGroup:AddToggle("RemoveTeleportUI", {
         else
             if _G.TeleportScreenBackup and _G.TeleportScreenParent then
                 _G.TeleportScreenBackup.Parent = _G.TeleportScreenParent
-                Fluent:Notify({Title = "Dungeon", Content = "✅ Tela restaurada!", Duration = 3})
             end
         end
     end
@@ -1724,25 +1717,41 @@ PerformanceGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard de Stats
     end
 end})
 
-PerformanceGroup:AddButton({Title = "Rejoin (Reentrar no Servidor)", Callback = function()
+PerformanceGroup:AddButton({Title = "Rejoin (Reentrar)", Callback = function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end})
 
--- 4. SEÇÃO AUTO EXECUTE
+-- 4. SEÇÃO AUTO EXECUTE (RECOLOCADA)
 local AutoExecSection = MiscTab:AddSection("💾 Auto Execute")
 
 AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
+    Description = "Cria um arquivo para o script abrir sozinho ao iniciar o jogo.",
     Callback = function()
         if writefile then
-            local cmd = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
-            writefile("FourHub_AutoExec.lua", cmd)
+            local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
+            writefile("FourHub_AutoExec.lua", command)
             Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
+        else
+            Fluent:Notify({Title = "Erro", Content = "Seu executor não suporta salvar arquivos.", Duration = 5})
         end
     end
 })
 
--- 5. BOTÃO MOBILE (ABRIR/FECHAR)
+AutoExecSection:AddToggle("AutoTeleportLoad", {
+    Title = "Persistência de Teleporte",
+    Description = "Faz o script reabrir ao entrar em Dungeons/Portais.",
+    Default = false,
+    Callback = function(Value)
+        Toggles.AutoExecute = Value
+        if Value and queue_on_teleport then
+            queue_on_teleport(string.format('loadstring(game:HttpGet("%s"))()', scriptURL))
+            Fluent:Notify({Title = "Ativado", Content = "Script carregará no próximo mapa!", Duration = 3})
+        end
+    end
+})
+
+-- 5. BOTÃO MOBILE
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
@@ -1781,4 +1790,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Aba Misc carregada com tudo!", Duration = 4})
+print("[FOUR HUB] ✅ Versão Final com Auto-Execute Restaurado.")
