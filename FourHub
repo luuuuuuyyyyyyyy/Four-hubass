@@ -8,32 +8,26 @@
 --  - Salvei e organizei settings via JSON conforme o script novo.
 
 -- ==========================================================
--- WHITELIST CORRIGIDA (FOUR HUB v3.0)
+-- 🛡️ WHITELIST DIRETA (FOUR HUB v3.0)
 -- ==========================================================
 repeat task.wait() until game:IsLoaded()
 
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
-
--- TESTE DE EXPULSÃO (DEIXE VAZIO PARA SER KICKADO)
 local IDs_Permitidos = {
-    -- [2712553626] = true, (Seu ID real da imagem está aqui, comentei para testar o kick)
+  --  [2712553626] = true, -- SEU ID REAL (Confirmado pela imagem)
+    [4286839868] = true, -- ID Reserva/Mapa
 }
 
 local Player = game:GetService("Players").LocalPlayer
 if not IDs_Permitidos[Player.UserId] then
-    Player:Kick("O TESTE FUNCIONOU! Voce foi expulso.")
+    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\nID: " .. Player.UserId)
     return
 end
 
-print("Acesso concedido para o ID: " .. MyID)
-
 -- ==========================================================
--- Começo script
--- ==========================================================")
-
+-- ⚙️ CONFIGURAÇÕES E SERVICES
+-- ==========================================================
+local Players = game:GetService("Players")
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent")
-local RunService = game:GetService("RunService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
