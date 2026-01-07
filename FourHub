@@ -1632,7 +1632,7 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC COMPLETA - VERSÃO FINAL (COM TUDO)
+-- ABA MISC - VERSÃO FINAL CORRIGIDA (REMOVER SCREEN VOLTOU)
 -- ==========================================================
 
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
@@ -1667,32 +1667,7 @@ StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = fa
     end
 end})
 
--- SEÇÃO: WEBHOOK
-local WebhookGroup = MiscTab:AddSection("🪝 Webhook Logger")
-WebhookGroup:AddInput("WebhookURLInput", {
-    Title = "URL do Webhook",
-    Default = "",
-    Callback = function(Value) WEBHOOK_URL = Value end
-})
-WebhookGroup:AddButton({
-    Title = "✅ Salvar e Testar",
-    Callback = function()
-        if WEBHOOK_URL ~= "" then
-            WebhookActive = true
-            SendWebhook("✅ FOUR HUB", "Conectado!", 65280)
-        end
-    end
-})
-
--- SEÇÃO: NOTIFICAÇÕES
-local NotificationsGroup = MiscTab:AddSection("🔔 Notificações")
-NotificationsGroup:AddToggle("NotificationsToggle", {
-    Title = "Ativar Notificações",
-    Default = true,
-    Callback = function(v) NotificationsEnabled = v end
-})
-
--- SEÇÃO: PROTEÇÃO (Onde está o Anti-AFK e o Remover Screen)
+-- SEÇÃO: PROTEÇÃO (ONDE ESTÁ O REMOVER SCREEN)
 local AntiAFKGroup = MiscTab:AddSection("Proteção")
 
 -- 1. Anti AFK Ultra
@@ -1704,38 +1679,41 @@ AntiAFKGroup:AddToggle("AntiAFK", {
         if v then
             local idledSignal = game:GetService("Players").LocalPlayer.Idled
             if getconnections then
-                for _, connection in pairs(getconnections(idledSignal)) do connection:Disable() end
+                for _, conn in pairs(getconnections(idledSignal)) do conn:Disable() end
             end
             getgenv().AntiAFKConnection = idledSignal:Connect(function()
                 game:GetService("VirtualUser"):CaptureController()
                 game:GetService("VirtualUser"):ClickButton2(Vector2.new())
             end)
-            Fluent:Notify({Title = "Anti AFK", Content = "✅ Ativado!", Duration = 3})
+            Fluent:Notify({Title = "Anti AFK", Content = "✅ Proteção Ativada!", Duration = 3})
         else
             if getgenv().AntiAFKConnection then getgenv().AntiAFKConnection:Disconnect() end
         end
     end
 })
 
--- 2. REMOVER TELEPORT SCREEN (O que tinha sumido!)
+-- 2. REMOVER TELEPORT SCREEN (O REMOVER SCREAM QUE VOCÊ QUERIA)
 AntiAFKGroup:AddToggle("RemoveTeleportUI", {
     Title = "Remover TeleportScreen UI", 
     Default = false, 
     Callback = function(v)
         Toggles.RemoveTeleportUI = v
-        local assetsFolder = game:GetService("ReplicatedStorage"):FindFirstChild("__Assets")
+        -- Busca a pasta de Assets de forma segura
+        local rs = game:GetService("ReplicatedStorage")
+        local assets = rs:FindFirstChild("__Assets")
+        
         if v then
-            local teleportScreen = assetsFolder and assetsFolder:FindFirstChild("TeleportScreen")
+            local teleportScreen = assets and assets:FindFirstChild("TeleportScreen")
             if teleportScreen then
-                _G.TeleportScreenOriginalParent = teleportScreen.Parent
                 _G.TeleportScreenBackup = teleportScreen
+                _G.TeleportScreenParent = teleportScreen.Parent
                 teleportScreen.Parent = nil
-                Fluent:Notify({Title = "TeleportScreen", Content = "✅ Removida!", Duration = 3})
+                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Tela removida com sucesso!", Duration = 3})
             end
         else
-            if _G.TeleportScreenBackup and _G.TeleportScreenOriginalParent then
-                _G.TeleportScreenBackup.Parent = _G.TeleportScreenOriginalParent
-                Fluent:Notify({Title = "TeleportScreen", Content = "✅ Restaurada!", Duration = 3})
+            if _G.TeleportScreenBackup and _G.TeleportScreenParent then
+                _G.TeleportScreenBackup.Parent = _G.TeleportScreenParent
+                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Tela restaurada!", Duration = 3})
             end
         end
     end
@@ -1748,8 +1726,8 @@ AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
     Callback = function()
         if writefile then
-            local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
-            writefile("FourHub_AutoExec.lua", command)
+            local cmd = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
+            writefile("FourHub_AutoExec.lua", cmd)
             Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
         end
     end
@@ -1758,15 +1736,15 @@ AutoExecSection:AddButton({
 AutoExecSection:AddToggle("AutoTeleportLoad", {
     Title = "Persistência de Teleporte",
     Default = false,
-    Callback = function(Value)
-        Toggles.AutoExecute = Value
-        if Value and queue_on_teleport then
+    Callback = function(v)
+        Toggles.AutoExecute = v
+        if v and queue_on_teleport then
             queue_on_teleport(string.format('loadstring(game:HttpGet("%s"))()', scriptURL))
         end
     end
 })
 
--- BOTÃO MOBILE EXCLUSIVO
+-- BOTÃO MOBILE
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
@@ -1778,7 +1756,7 @@ if game:GetService("UserInputService").TouchEnabled then
     MobileToggleButton.MouseButton1Click:Connect(function() Window:Minimize() end)
 end
 
--- SISTEMA DE SAVE GLOBAL
+-- SISTEMA DE SAVE
 local SaveFileName = "FourHub_v3_Config.json"
 local function GlobalSave()
     local ConfigToSave = {}
@@ -1805,4 +1783,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Tudo restaurado com sucesso!", Duration = 4})
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Tudo restaurado! 'Remover Screen' está na seção Proteção.", Duration = 4})
