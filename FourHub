@@ -7,35 +7,21 @@
 --  - O botão/toggle de Auto Reset (Auto Dungeon Reset) foi colocado na aba Dungeon (Farm) conforme no script novo.
 --  - Salvei e organizei settings via JSON conforme o script novo.
 
--- ==========================================================
--- 🛡️ WHITELIST DIRETA (CORRIGIDA)
--- ==========================================================
-local IDs_Permitidos = {
-    [2712553626] = true, -- SEU ID REAL DA IMAGEM
-    [4286839868] = true, -- ID RESERVA
-}
-
-local Player = game:GetService("Players").LocalPlayer
-
--- Verifica o ID imediatamente sem esperar o jogo carregar (mais rápido)
-if not IDs_Permitidos[Player.UserId] then
-    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\nSeu ID: " .. Player.UserId)
-    return
-end
-
--- ==========================================================
--- ⚙️ SERVICES / VARS (INÍCIO DO HUB)
--- ==========================================================
+-- ===== SERVICES / VARS (unificados) =====
 local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
--- Carregamento da Fluent
-local okFluent, Fluent = pcall(function() return Fluent end)
+-- Try to reuse existing Fluent loaded earlier; if not present, load a fallback
+local okFluent, Fluent = pcall(function()
+    return Fluent
+end)
 if not okFluent or not Fluent then
+    -- fallback loader (original had a different URL)
     Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 end
 
