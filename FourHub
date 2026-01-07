@@ -18,8 +18,8 @@ local MyID = Player.UserId
 
 -- LISTA DE IDS PERMITIDOS
 local IDs_Permitidos = {
-    [4286839868] = true, -- O ID que voce passou
-    [1234567890] = true, -- COLOQUE SEU ID REAL AQUI SE FOR DIFERENTE
+    [2712553626] = true, -- O ID que voce passou
+    [4286839868] = true, -- COLOQUE SEU ID REAL AQUI SE FOR DIFERENTE
 }
 
 -- VERIFICAÇÃO
