@@ -1632,62 +1632,31 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC - TUDO INCLUSO (NOTIFICAÇÕES + REMOVER SCREEN)
+-- ABA MISC FINAL - TUDO ORGANIZADO (COLE DO MISCTAB EM DIANTE)
 -- ==========================================================
 
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
--- SEÇÃO: FERRAMENTAS
-local MiscGroup = MiscTab:AddSection("Ferramentas")
-MiscGroup:AddButton({Title = "Rejoin", Callback = function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-end})
+-- 1. SEÇÃO DE NOTIFICAÇÕES (COLOQUEI NO TOPO PARA NÃO SUMIR)
+local NotificationsGroup = MiscTab:AddSection("🔔 Configurações de Avisos")
 
--- SEÇÃO: PERFORMANCE
-local PerformanceGroup = MiscTab:AddSection("🚀 Performance")
-PerformanceGroup:AddButton({Title = "FPS Booster Mobile", Callback = function()
-    Toggles.FPSBooster = true
-    BoostFPS()
-end})
-
--- SEÇÃO: DASHBOARD
-local StatsGroup = MiscTab:AddSection("📊 Stats Dashboard")
-StatsGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard", Default = false, Callback = function(v)
-    Toggles.StatsDashboard = v
-    if v then
-        CreateStatsDashboard()
-        StatsActive = true
-        StartTime = tick()
-        task.spawn(function()
-            while StatsActive do UpdateStats(); task.wait(1) end
-        end)
-    else
-        StatsActive = false
-        if StatsUI and StatsUI.ScreenGui then StatsUI.ScreenGui:Destroy() end
-    end
-end})
-
--- SEÇÃO: NOTIFICAÇÕES (VOLTOU!)
-local NotificationsGroup = MiscTab:AddSection("🔔 Notificações")
 NotificationsGroup:AddToggle("NotificationsToggle", {
-    Title = "Ativar Notificações",
-    Description = "Desative para parar de ver avisos no canto da tela.",
+    Title = "Ativar Notificações do Script",
+    Description = "Liga/Desliga os avisos que aparecem no canto da tela.",
     Default = true,
-    Callback = function(v)
-        NotificationsEnabled = v
-        -- Feedback visual rápido
+    Callback = function(Value)
+        NotificationsEnabled = Value
         Fluent:Notify({
-            Title = "Sistema de Notificações",
-            Content = v and "Notificações Ativadas ✅" or "Notificações Desativadas ❌",
+            Title = "Notificações",
+            Content = Value and "Avisos Ativados ✅" or "Avisos Desativados ❌",
             Duration = 3
         })
     end
 })
 
--- SEÇÃO: PROTEÇÃO (ANTI-AFK E REMOVER SCREEN)
-local AntiAFKGroup = MiscTab:AddSection("Proteção")
+-- 2. SEÇÃO DE PROTEÇÃO (ANTI-AFK E REMOVER SCREEN)
+local AntiAFKGroup = MiscTab:AddSection("🛡️ Proteção e Dungeon")
 
--- 1. Anti AFK Ultra
 AntiAFKGroup:AddToggle("AntiAFK", {
     Title = "Anti AFK (Ultra)", 
     Default = false, 
@@ -1709,33 +1678,59 @@ AntiAFKGroup:AddToggle("AntiAFK", {
     end
 })
 
--- 2. Remover Teleport Screen (Scream Dungeon)
 AntiAFKGroup:AddToggle("RemoveTeleportUI", {
-    Title = "Remover TeleportScreen UI", 
+    Title = "Remover TeleportScreen (Dungeon)", 
     Default = false, 
     Callback = function(v)
         Toggles.RemoveTeleportUI = v
-        local rs = game:GetService("ReplicatedStorage")
-        local assets = rs:FindFirstChild("__Assets")
+        local assets = game:GetService("ReplicatedStorage"):FindFirstChild("__Assets")
         if v then
-            local teleportScreen = assets and assets:FindFirstChild("TeleportScreen")
-            if teleportScreen then
-                _G.TeleportScreenBackup = teleportScreen
-                _G.TeleportScreenParent = teleportScreen.Parent
-                teleportScreen.Parent = nil
-                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Removida!", Duration = 3})
+            local screen = assets and assets:FindFirstChild("TeleportScreen")
+            if screen then
+                _G.TeleportScreenBackup = screen
+                _G.TeleportScreenParent = screen.Parent
+                screen.Parent = nil
+                Fluent:Notify({Title = "Dungeon", Content = "✅ Tela removida!", Duration = 3})
             end
         else
             if _G.TeleportScreenBackup and _G.TeleportScreenParent then
                 _G.TeleportScreenBackup.Parent = _G.TeleportScreenParent
-                Fluent:Notify({Title = "Dungeon Screen", Content = "✅ Restaurada!", Duration = 3})
+                Fluent:Notify({Title = "Dungeon", Content = "✅ Tela restaurada!", Duration = 3})
             end
         end
     end
 })
 
--- SEÇÃO: AUTO EXECUTE
-local AutoExecSection = MiscTab:AddSection("Auto Execute")
+-- 3. SEÇÃO DE FERRAMENTAS E PERFORMANCE
+local PerformanceGroup = MiscTab:AddSection("🚀 Performance e Stats")
+
+PerformanceGroup:AddButton({Title = "FPS Booster Mobile", Callback = function()
+    Toggles.FPSBooster = true
+    BoostFPS()
+end})
+
+PerformanceGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard de Stats", Default = false, Callback = function(v)
+    Toggles.StatsDashboard = v
+    if v then
+        CreateStatsDashboard()
+        StatsActive = true
+        StartTime = tick()
+        task.spawn(function()
+            while StatsActive do UpdateStats(); task.wait(1) end
+        end)
+    else
+        StatsActive = false
+        if StatsUI and StatsUI.ScreenGui then StatsUI.ScreenGui:Destroy() end
+    end
+end})
+
+PerformanceGroup:AddButton({Title = "Rejoin (Reentrar no Servidor)", Callback = function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+end})
+
+-- 4. SEÇÃO AUTO EXECUTE
+local AutoExecSection = MiscTab:AddSection("💾 Auto Execute")
+
 AutoExecSection:AddButton({
     Title = "Instalar no Auto-Exec",
     Callback = function()
@@ -1747,7 +1742,7 @@ AutoExecSection:AddButton({
     end
 })
 
--- BOTÃO MOBILE
+-- 5. BOTÃO MOBILE (ABRIR/FECHAR)
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
@@ -1759,7 +1754,7 @@ if game:GetService("UserInputService").TouchEnabled then
     MobileToggleButton.MouseButton1Click:Connect(function() Window:Minimize() end)
 end
 
--- SISTEMA DE SAVE
+-- 6. SISTEMA DE SAVE GLOBAL (FINAL DO SCRIPT)
 local SaveFileName = "FourHub_v3_Config.json"
 local function GlobalSave()
     local ConfigToSave = {}
@@ -1786,4 +1781,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ TUDO PRONTO!", Duration = 4})
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Aba Misc carregada com tudo!", Duration = 4})
