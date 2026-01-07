@@ -1632,23 +1632,24 @@ if #availableIslands > 0 then
 end
 
 -- ==========================================================
--- ABA MISC COMPLETA - TUDO RESTAURADO E ORGANIZADO
+-- ABA MISC CORRIGIDA (IGUAL À FOTO + AUTO EXECUTE COMPLETO)
 -- ==========================================================
 
 local scriptURL = "https://raw.githubusercontent.com/luuuuuuyyyyyyyy/Four-hubass/refs/heads/main/FourHub"
 
--- 1. SEÇÃO DE NOTIFICAÇÕES
-local NotificationsGroup = MiscTab:AddSection("🔔 Configurações de Avisos")
+-- 1. NOTIFICAÇÕES (IGUAL À FOTO)
+local NotificationsGroup = MiscTab:AddSection("Avisos") -- Título curto para não poluir
 
 NotificationsGroup:AddToggle("NotificationsToggle", {
     Title = "Ativar Notificações do Script",
+    Description = "Liga/Desliga os avisos que aparecem no canto da tela.",
     Default = true,
     Callback = function(Value)
         NotificationsEnabled = Value
     end
 })
 
--- 2. SEÇÃO DE PROTEÇÃO (ANTI-AFK E REMOVER SCREEN)
+-- 2. PROTEÇÃO E DUNGEON (IGUAL À FOTO)
 local AntiAFKGroup = MiscTab:AddSection("🛡️ Proteção e Dungeon")
 
 AntiAFKGroup:AddToggle("AntiAFK", {
@@ -1694,50 +1695,59 @@ AntiAFKGroup:AddToggle("RemoveTeleportUI", {
     end
 })
 
--- 3. SEÇÃO DE FERRAMENTAS E PERFORMANCE
+-- 3. PERFORMANCE E STATS (IGUAL À FOTO)
 local PerformanceGroup = MiscTab:AddSection("🚀 Performance e Stats")
 
-PerformanceGroup:AddButton({Title = "FPS Booster Mobile", Callback = function()
-    Toggles.FPSBooster = true
-    BoostFPS()
-end})
-
-PerformanceGroup:AddToggle("StatsDashboard", {Title = "Ativar Dashboard de Stats", Default = false, Callback = function(v)
-    Toggles.StatsDashboard = v
-    if v then
-        CreateStatsDashboard()
-        StatsActive = true
-        StartTime = tick()
-        task.spawn(function()
-            while StatsActive do UpdateStats(); task.wait(1) end
-        end)
-    else
-        StatsActive = false
-        if StatsUI and StatsUI.ScreenGui then StatsUI.ScreenGui:Destroy() end
-    end
-end})
-
-PerformanceGroup:AddButton({Title = "Rejoin (Reentrar)", Callback = function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-end})
-
--- 4. SEÇÃO AUTO EXECUTE (RECOLOCADA)
-local AutoExecSection = MiscTab:AddSection("💾 Auto Execute")
-
-AutoExecSection:AddButton({
-    Title = "Instalar no Auto-Exec",
-    Description = "Cria um arquivo para o script abrir sozinho ao iniciar o jogo.",
+PerformanceGroup:AddButton({
+    Title = "FPS Booster Mobile", 
     Callback = function()
-        if writefile then
-            local command = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
-            writefile("FourHub_AutoExec.lua", command)
-            Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
+        Toggles.FPSBooster = true
+        BoostFPS()
+    end
+})
+
+PerformanceGroup:AddToggle("StatsDashboard", {
+    Title = "Ativar Dashboard de Stats", 
+    Default = false, 
+    Callback = function(v)
+        Toggles.StatsDashboard = v
+        if v then
+            CreateStatsDashboard()
+            StatsActive = true
+            StartTime = tick()
+            task.spawn(function()
+                while StatsActive do UpdateStats(); task.wait(1) end
+            end)
         else
-            Fluent:Notify({Title = "Erro", Content = "Seu executor não suporta salvar arquivos.", Duration = 5})
+            StatsActive = false
+            if StatsUI and StatsUI.ScreenGui then StatsUI.ScreenGui:Destroy() end
         end
     end
 })
 
+PerformanceGroup:AddButton({
+    Title = "Rejoin (Reentrar no Servidor)", 
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+    end
+})
+
+-- 4. AUTO EXECUTE (AGORA COM O TOGGLE QUE FALTAVA)
+local AutoExecSection = MiscTab:AddSection("💾 Auto Execute")
+
+AutoExecSection:AddButton({
+    Title = "Instalar no Auto-Exec",
+    Description = "Salva o script na pasta do executor para abrir sozinho.",
+    Callback = function()
+        if writefile then
+            local cmd = string.format('repeat task.wait() until game:IsLoaded(); loadstring(game:HttpGet("%s"))()', scriptURL)
+            writefile("FourHub_AutoExec.lua", cmd)
+            Fluent:Notify({Title = "Sucesso", Content = "Salvo na pasta autoexec!", Duration = 5})
+        end
+    end
+})
+
+-- A CHAVE QUE VOLTOU:
 AutoExecSection:AddToggle("AutoTeleportLoad", {
     Title = "Persistência de Teleporte",
     Description = "Faz o script reabrir ao entrar em Dungeons/Portais.",
@@ -1751,7 +1761,7 @@ AutoExecSection:AddToggle("AutoTeleportLoad", {
     end
 })
 
--- 5. BOTÃO MOBILE
+-- BOTÃO MOBILE
 if game:GetService("UserInputService").TouchEnabled then
     local MobileToggleGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     local MobileToggleButton = Instance.new("TextButton", MobileToggleGui)
@@ -1763,7 +1773,7 @@ if game:GetService("UserInputService").TouchEnabled then
     MobileToggleButton.MouseButton1Click:Connect(function() Window:Minimize() end)
 end
 
--- 6. SISTEMA DE SAVE GLOBAL (FINAL DO SCRIPT)
+-- SISTEMA DE SAVE
 local SaveFileName = "FourHub_v3_Config.json"
 local function GlobalSave()
     local ConfigToSave = {}
@@ -1790,4 +1800,4 @@ for Id, Option in pairs(Fluent.Options) do
 end
 
 Window:SelectTab(LojaTab)
-print("[FOUR HUB] ✅ Versão Final com Auto-Execute Restaurado.")
+Fluent:Notify({Title = "FOUR HUB v3", Content = "✅ Misc e Auto Execute restaurados!", Duration = 4})
