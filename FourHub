@@ -7,22 +7,32 @@
 --  - O botão/toggle de Auto Reset (Auto Dungeon Reset) foi colocado na aba Dungeon (Farm) conforme no script novo.
 --  - Salvei e organizei settings via JSON conforme o script novo.
 
--- WHITELIST DIRETA
+-- ==========================================================
+-- WHITELIST SEGURA (FOUR HUB v3.0)
+-- ==========================================================
+repeat task.wait() until game:IsLoaded() -- Espera o jogo carregar 100%
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
+local MyID = Player.UserId
+
+-- LISTA DE IDS PERMITIDOS
 local IDs_Permitidos = {
-    [4286839868] = true, -- O ID que você passou
-    [0000000000] = true, -- Adicione outros IDs aqui (um por linha)
+    [4286839868] = true, -- O ID que voce passou
+    [1234567890] = true, -- COLOQUE SEU ID REAL AQUI SE FOR DIFERENTE
 }
 
-if not IDs_Permitidos[game.Players.LocalPlayer.UserId] then
-    -- Se o cara não estiver na lista, ele leva Kick e mostra o ID real dele
-    game.Players.LocalPlayer:Kick("Acesso Negado! Seu ID Real: " .. game.Players.LocalPlayer.UserId)
-    return
+-- VERIFICAÇÃO
+if not IDs_Permitidos[MyID] then
+    warn("ACESSO NEGADO: " .. MyID) -- Aparece no F9
+    Player:Kick("\n[FOUR HUB] WHITELIST\n\nSeu ID Real e: " .. MyID .. "\n\nTroque o numero no topo do script por este!")
+    return -- Para o script aqui
 end
 
--- ===== SERVICES / VARS (unificados) =====
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
+print("Acesso Permitido! Carregando FOUR HUB...")
+
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent")
+local RunService = game:GetService("RunService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
