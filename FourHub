@@ -8,23 +8,23 @@
 --  - Salvei e organizei settings via JSON conforme o script novo.
 
 -- ==========================================================
--- 🛡️ WHITELIST DIRETA (FOUR HUB v3.0)
+-- 🛡️ WHITELIST DIRETA (CORRIGIDA)
 -- ==========================================================
-repeat task.wait() until game:IsLoaded()
-
 local IDs_Permitidos = {
-   -- [2712553626] = true, -- SEU ID REAL (Confirmado pela imagem)
-    [4286839868] = true, -- ID Reserva/Mapa
+    [2712553626] = true, -- SEU ID REAL DA IMAGEM
+    [4286839868] = true, -- ID RESERVA
 }
 
 local Player = game:GetService("Players").LocalPlayer
+
+-- Verifica o ID imediatamente sem esperar o jogo carregar (mais rápido)
 if not IDs_Permitidos[Player.UserId] then
-    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\nID: " .. Player.UserId)
+    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\nSeu ID: " .. Player.UserId)
     return
 end
 
 -- ==========================================================
--- ⚙️ CONFIGURAÇÕES E SERVICES
+-- ⚙️ SERVICES / VARS (INÍCIO DO HUB)
 -- ==========================================================
 local Players = game:GetService("Players")
 local Remote = game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent")
@@ -33,12 +33,9 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
--- Try to reuse existing Fluent loaded earlier; if not present, load a fallback
-local okFluent, Fluent = pcall(function()
-    return Fluent
-end)
+-- Carregamento da Fluent
+local okFluent, Fluent = pcall(function() return Fluent end)
 if not okFluent or not Fluent then
-    -- fallback loader (original had a different URL)
     Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 end
 
