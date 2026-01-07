@@ -1759,45 +1759,52 @@ NotificationsGroup:AddButton({
     end
 })
 
--- AntiAFK and RemoveScreens toggles
-local AntiAFKGroup = MiscTab:AddSection("Proteção")
-AntiAFKGroup:AddToggle("AntiAFK", {Title = "Anti AFK", Default = false, Callback = function(v)
-    Toggles.AntiAFK = v
-    if v then
-        getgenv().AntiAFKConnection = game:GetService("Players").LocalPlayer.Idled:Connect(function()
-            local VirtualUser = game:GetService("VirtualUser")
-            VirtualUser:CaptureController()
-            VirtualUser:ClickButton2(Vector2.new())
-        end)
-        Fluent:Notify({Title = "Anti AFK", Content = "✅ Ativado!", Duration = 3})
-    else
-        if getgenv().AntiAFKConnection then
-            getgenv().AntiAFKConnection:Disconnect()
-            getgenv().AntiAFKConnection = nil
-        end
-        Fluent:Notify({Title = "Anti AFK", Content = "❌ Desativado!", Duration = 3})
-    end
-end})
+AntiAFKGroup:AddToggle("AntiAFK", {
+    Title = "Anti AFK (Ultra)", 
+    Default = false, 
+    Callback = function(v)
+        Toggles.AntiAFK = v
+        
+        if v then
+            -- Método 1: Desabilita a detecção de inatividade do Roblox
+            local idledSignal = game:GetService("Players").LocalPlayer.Idled
+            
+            -- Tenta desconectar conexões existentes que poderiam te kickar
+            if getconnections then
+                for _, connection in pairs(getconnections(idledSignal)) do
+                    connection:Disable()
+                end
+            end
 
-AntiAFKGroup:AddToggle("RemoveTeleportUI", {Title = "Remover TeleportScreen UI", Default = false, Callback = function(v)
-    Toggles.RemoveTeleportUI = v
-    local assetsFolder = ReplicatedStorage:FindFirstChild("__Assets")
-    if v then
-        local teleportScreen = assetsFolder and assetsFolder:FindFirstChild("TeleportScreen")
-        if teleportScreen then
-            _G.TeleportScreenOriginalParent = teleportScreen.Parent
-            _G.TeleportScreenBackup = teleportScreen
-            teleportScreen.Parent = nil
-            Fluent:Notify({Title = "TeleportScreen", Content = "✅ Removida!", Duration = 3})
-        end
-    else
-        if _G.TeleportScreenBackup and _G.TeleportScreenOriginalParent then
-            _G.TeleportScreenBackup.Parent = _G.TeleportScreenOriginalParent
-            Fluent:Notify({Title = "TeleportScreen", Content = "✅ Restaurada!", Duration = 3})
+            -- Método 2: Backup via Simulação de Input
+            getgenv().AntiAFKConnection = idledSignal:Connect(function()
+                local vu = game:GetService("VirtualUser")
+                vu:CaptureController()
+                vu:ClickButton2(Vector2.new())
+                -- Simula uma pequena movimentação de câmera para garantir
+                game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(0.5)
+                game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end)
+
+            Fluent:Notify({Title = "Anti AFK", Content = "✅ Proteção Ultra Ativada!", Duration = 3})
+        else
+            -- Restaura as conexões se o usuário desligar
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+                getgenv().AntiAFKConnection = nil
+            end
+            
+            if getconnections then
+                for _, connection in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
+                    connection:Enable()
+                end
+            end
+            
+            Fluent:Notify({Title = "Anti AFK", Content = "❌ Proteção Desativada!", Duration = 3})
         end
     end
-end})
-
+})
 -- ===========================
 -- SEÇÃO AUTO EXECUTE (Sincronizado com GitHub)
 -- ===========================
