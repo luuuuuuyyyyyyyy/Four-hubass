@@ -15,18 +15,14 @@ repeat task.wait() until game:IsLoaded()
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 
--- Sua lista atualizada com o ID da imagem
+-- TESTE DE EXPULSÃO (DEIXE VAZIO PARA SER KICKADO)
 local IDs_Permitidos = {
-    [0] = true, -- SEU ID REAL (Confirmado pela imagem)
-    [4286839868] = true, -- ID reserva
+    -- [2712553626] = true, (Seu ID real da imagem está aqui, comentei para testar o kick)
 }
 
-local MyID = Player.UserId
-
--- Verificação direta
-if not IDs_Permitidos[MyID] then
-    warn("ID nao autorizado: " .. MyID)
-    Player:Kick("\n[FOUR HUB] ACESSO NEGADO\n\nSeu ID Real: " .. MyID .. "\nSe este ID estiver certo no script, salve o arquivo e tente de novo!")
+local Player = game:GetService("Players").LocalPlayer
+if not IDs_Permitidos[Player.UserId] then
+    Player:Kick("O TESTE FUNCIONOU! Voce foi expulso.")
     return
 end
 
