@@ -15,6 +15,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser")
 
 -- Try to reuse existing Fluent loaded earlier; if not present, load a fallback
 local okFluent, Fluent = pcall(function()
@@ -1038,7 +1039,7 @@ end)
 -- WINDOW (use Fluent already loaded)
 local Window = Fluent:CreateWindow({
     Title = "FOUR HUB",
-    SubTitle = "v3.0 - COMPLETO",
+    SubTitle = "v4.0 - ATUALIZOU !!!!",
     TabWidth = 160,
     Size = UDim2.fromOffset(600, 500),
     Acrylic = true,
@@ -1760,6 +1761,98 @@ AutoExecSection:AddToggle("AutoTeleportLoad", {
         end
     end
 })
+
+-- ==========================================================
+-- AUTO KEY PRESSER (2 SLOTS) - INTEGRADO NA ABA MISC
+-- ==========================================================
+local AutoKeySection = MiscTab:AddSection("⌨️ Auto Team")
+
+local AutoKeyRunning = false
+
+-- Inputs Slot 1
+AutoKeySection:AddInput("KeySlot1", {
+    Title = "Tecla Slot 1",
+    Default = "1",
+    Placeholder = "Ex: 1 ou Q",
+    Callback = function() end -- Valor guardado em Fluent.Options
+})
+
+AutoKeySection:AddInput("TimeSlot1", {
+    Title = "Tempo Slot 1 (Segundos)",
+    Default = "1",
+    Placeholder = "Ex: 0.5",
+    Callback = function() end
+})
+
+-- Inputs Slot 2
+AutoKeySection:AddInput("KeySlot2", {
+    Title = "Tecla Slot 2",
+    Default = "G",
+    Placeholder = "Ex: G ou E",
+    Callback = function() end
+})
+
+AutoKeySection:AddInput("TimeSlot2", {
+    Title = "Tempo Slot 2 (Segundos)",
+    Default = "5",
+    Placeholder = "Ex: 2",
+    Callback = function() end
+})
+
+-- Toggle para Ligar/Desligar
+AutoKeySection:AddToggle("ToggleAutoKey", {
+    Title = "Ativar Auto Key",
+    Default = false,
+    Callback = function(Value)
+        AutoKeyRunning = Value
+        if Value then
+            Fluent:Notify({Title = "Auto Key", Content = "Sistema Iniciado!", Duration = 3})
+        end
+    end
+})
+
+-- LÓGICA DE CLIQUE (VIRTUAL USER)
+-- Slot 1 Loop
+task.spawn(function()
+    while true do
+        if AutoKeyRunning then
+            local tecla = Fluent.Options.KeySlot1.Value
+            local tempo = tonumber(Fluent.Options.TimeSlot1.Value)
+            
+            if tecla ~= "" and tempo and tempo > 0 then
+                pcall(function()
+                    VirtualUser:TypeKey(tecla:lower())
+                end)
+                task.wait(tempo)
+            else
+                task.wait(1)
+            end
+        else
+            task.wait(1)
+        end
+    end
+end)
+
+-- Slot 2 Loop
+task.spawn(function()
+    while true do
+        if AutoKeyRunning then
+            local tecla = Fluent.Options.KeySlot2.Value
+            local tempo = tonumber(Fluent.Options.TimeSlot2.Value)
+            
+            if tecla ~= "" and tempo and tempo > 0 then
+                pcall(function()
+                    VirtualUser:TypeKey(tecla:lower())
+                end)
+                task.wait(tempo)
+            else
+                task.wait(1)
+            end
+        else
+            task.wait(1)
+        end
+    end
+end)
 
 -- BOTÃO MOBILE
 if game:GetService("UserInputService").TouchEnabled then
