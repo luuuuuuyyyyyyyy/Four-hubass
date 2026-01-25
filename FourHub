@@ -57,7 +57,7 @@ local function ComprarItem(shop, item)
     Remote:FireServer({
         {
             Shop = shop, Action = "Buy", Amount = 1, Item = item, Event = "ItemShopAction", Rank = 1
-        }, "\004"
+        }, "\017"
     })
 end
 
@@ -65,7 +65,7 @@ local function FazerUpgrade(target, upgrader)
     Remote:FireServer({
         {
             Target = target, Event = "UpgradeAction", Action = "Upgrade", Upgrade = upgrader
-        }, "\004"
+        }, "\017"
     })
 end
 
@@ -73,7 +73,7 @@ local function FazerGacha(name)
     Remote:FireServer({
         {
             GachaName = name, Event = "Gacha", Action = "Roll"
-        }, "\004"
+        }, "\017"
     })
 end
 
@@ -81,7 +81,7 @@ local function CreateDungeon()
     Remote:FireServer({
         {
             Event = "DungeonAction", Action = "Create"
-        }, "\004"
+        }, "\017"
     })
 end
 
@@ -89,7 +89,7 @@ local function StartDungeon()
     Remote:FireServer({
         {
             Dungeon = 4286839868, Event = "DungeonAction", Action = "Start"
-        }, "\004"
+        }, "\017"
     })
 end
 
@@ -102,7 +102,7 @@ local function StartRun(eventName, checkpoint)
             Dungeon = 4286839868,
             Check = tostring(checkpoint)
         },
-        "\004"
+        "\017"
     })
 end
 
@@ -112,7 +112,7 @@ local function CreateRoom(eventName)
             Event = eventName,
             Action = "Create"
         },
-        "\004"
+        "\017"
     })
 end
 
@@ -124,7 +124,7 @@ local function StartBoss(diff)
             Dungeon = 4286839868,
             Diff = diff
         },
-        "\004"
+        "\017"
     })
 end
 
@@ -134,7 +134,7 @@ local function CreateBoss()
             Event = "BossRushAction",
             Action = "Create"
         },
-        "\004"
+        "\017"
     })
 end
 
