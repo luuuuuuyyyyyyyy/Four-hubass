@@ -93,7 +93,7 @@ local function StartDungeon()
     })
 end
 
--- INFINITE helpers (StartRun, CreateRoom, StartBoss, CreateBoss) using "\004"
+-- INFINITE helpers (StartRun, CreateRoom, StartBoss, CreateBoss) using "\017"
 local function StartRun(eventName, checkpoint)
     Remote:FireServer({
         {
@@ -1221,7 +1221,7 @@ GachaGroup:AddToggle("AutoGachaToggle", {
                                 Event = "Gacha",
                                 Action = "Roll"
                             },
-                            "\004"
+                            "\017"
                         }
                     }
                     Remote:FireServer(unpack(args))
@@ -1300,7 +1300,7 @@ UpgraderSection:AddToggle("AutoUpgraderToggle", {
                                 Action = "Upgrade",
                                 Upgrade = realUpgradeName
                             },
-                            "\004"
+                            "\017"
                         }
                     }
                     Remote:FireServer(unpack(args))
@@ -1352,7 +1352,7 @@ UpgradeBagSection:AddToggle("AutoUpgradeToggle", {
                                 Action = "Upgrade",
                                 Upgrade = "StorageUpgrade"
                             },
-                            "\004"
+                            "\017"
                         }
                     }
                     Remote:FireServer(unpack(args))
@@ -1424,7 +1424,7 @@ ShopSection:AddToggle("AutoBuyToggle", {
                                     Event = "ItemShopAction",
                                     Rank = 1
                                 },
-                                "\004"
+                                "\017"
                             }
                         }
                         Remote:FireServer(unpack(args))
@@ -1464,7 +1464,7 @@ MysticaSection:AddToggle("AutoMysticaToggle", {
                                 Event = "ItemShopAction",
                                 Rank = 1
                             },
-                            "\004"
+                            "\017"
                         }
                     }
                     Remote:FireServer(unpack(args))
@@ -1547,7 +1547,7 @@ AutoDungeonGroup:AddToggle("AutoDungeonReset", {
                             Event = "DungeonAction",
                             Action = "BuyTicket"
                         },
-                        "\004"
+                        "\017"
                     })
 
                     task.wait(0.4)
@@ -1558,7 +1558,7 @@ AutoDungeonGroup:AddToggle("AutoDungeonReset", {
                             Event = "DungeonAction",
                             Action = "Create"
                         },
-                        "\004"
+                        "\017"
                     })
 
                     task.wait(0.5)
@@ -1570,7 +1570,7 @@ AutoDungeonGroup:AddToggle("AutoDungeonReset", {
                             Event = "DungeonAction",
                             Action = "Start"
                         },
-                        "\004"
+                        "\017"
                     })
 
                     Fluent:Notify({Title = "Auto Reset", Content = "Nova dungeon iniciada! Farmando...", Duration = 4})
